@@ -24,9 +24,22 @@ const Setting = observer(() => {
   const handleCheckUpdate = async () => {
     setCheckingUpdate(true)
     try {
-      // 发送IPC消息给主进程，调用主进程的检查更新方法
-      ipcRenderer.send('check-update')
-      message.info('正在检查更新，请稍候...')
+      // 交由主进程检查，结果通过返回值带回，界面按状态提示
+      const result = await ipcRenderer.invoke('check-update')
+      switch (result?.status) {
+        case 'latest':
+          message.success(result.message)
+          break
+        case 'dev':
+          message.warning(result.message)
+          break
+        case 'error':
+          message.error(result.message)
+          break
+        // 有新版本时主进程会弹出确认框，这里不再重复提示
+        default:
+          break
+      }
     } catch (error) {
       console.error('检查更新失败:', error)
       message.error('检查更新失败，请稍后重试')

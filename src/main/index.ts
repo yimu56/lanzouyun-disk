@@ -69,9 +69,12 @@ function initEvents() {
     }
   })
 
-  // 监听渲染进程的检查更新请求
-  ipcMain.on('check-update', () => {
-    main.checkForUpdates()
+  // 监听渲染进程的检查更新请求，把结果回传给界面用于提示
+  ipcMain.handle('check-update', async () => {
+    if (!main) {
+      return {status: 'error', message: '应用尚未初始化完成'}
+    }
+    return main.checkForUpdates()
   })
 }
 
